@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [react()],
   base: '/mandelbrot-viewer/',
   server: {
-    host: true,
     port: 3001,
+    host: true,
     strictPort: true,
-    open: true // This will automatically open the browser
+    open: true
   }
-}) 
+})

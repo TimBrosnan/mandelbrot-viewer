@@ -21,7 +21,7 @@ const App: React.FC = () => {
   const [coordinates, setCoordinates] = useState<Coordinates>(DEFAULT_VIEW);
   const [zoomLevel, setZoomLevel] = useState<number>(DEFAULT_VIEW.zoom);
   const [selectedColorScheme, setSelectedColorScheme] = useState<ColorScheme>(colorSchemes[2]); // Index 2 is Psychedelic
-  const [quality, setQuality] = useState<number>(1);
+  const quality = 1; // Changed from useState to a constant since we don't need to change it
   const [cursorPosition, setCursorPosition] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
   const [zoomStepSize, setZoomStepSize] = useState(0.2); // 20% zoom step
   const [zoomAnimationSpeed, setZoomAnimationSpeed] = useState(0.5); // 50% animation speed

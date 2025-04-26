@@ -21,6 +21,7 @@ interface ControlPanelProps {
   onZoomAnimationSpeedChange: (value: number) => void;
   selectedColorScheme: ColorScheme;
   onColorSchemeChange: (scheme: ColorScheme) => void;
+  onScreenshot: () => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -35,6 +36,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onZoomAnimationSpeedChange,
   selectedColorScheme,
   onColorSchemeChange,
+  onScreenshot
 }) => {
   return (
     <div style={{
@@ -64,6 +66,23 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         }}
       >
         Reset View
+      </button>
+
+      <button
+        onClick={onScreenshot}
+        style={{
+          width: '100%',
+          padding: '12px',
+          marginBottom: 20,
+          backgroundColor: '#2196F3',
+          color: 'white',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+          fontSize: '16px',
+        }}
+      >
+        Capture Screenshot
       </button>
 
       <div style={{ marginBottom: 20 }}>
@@ -149,7 +168,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           Y: [{viewBounds.yMin.toFixed(3)}, {viewBounds.yMax.toFixed(3)}]
         </p>
         <p style={{ margin: '8px 0' }}>
-          Cursor: ({cursorPosition.x?.toFixed(8) || 'N/A'}, {cursorPosition.y?.toFixed(8) || 'N/A'})
+          Cursor: ({cursorPosition.x?.toFixed(12) || 'N/A'}, {cursorPosition.y?.toFixed(12) || 'N/A'})
+        </p>
+        <p style={{ margin: '8px 0' }}>
+          Zoom Ratio: 1:{Math.round(1 / (viewBounds.xMax - viewBounds.xMin) * 4).toLocaleString()}
         </p>
       </div>
     </div>

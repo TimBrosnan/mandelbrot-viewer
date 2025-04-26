@@ -1,5 +1,5 @@
 // Mandelbrot Explorer App
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import './App.css';
 import MandelbrotCanvas from './components/MandelbrotCanvas';
 import ControlPanel from './components/ControlPanel';
@@ -25,10 +25,23 @@ const App: React.FC = () => {
   const [cursorPosition, setCursorPosition] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
   const [zoomStepSize, setZoomStepSize] = useState(0.2); // 20% zoom step
   const [zoomAnimationSpeed, setZoomAnimationSpeed] = useState(0.5); // 50% animation speed
+  const mandelbrotRef = useRef<{ captureScreenshot: () => void } | null>(null);
 
   const handleReset = useCallback(() => {
     setCoordinates(DEFAULT_VIEW);
     setZoomLevel(DEFAULT_VIEW.zoom);
+  }, []);
+
+  const handleScreenshot = useCallback((dataUrl: string) => {
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.download = `mandelbrot-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+    link.href = dataUrl;
+    
+    // Trigger the download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }, []);
 
   // Calculate current view bounds
@@ -56,6 +69,7 @@ const App: React.FC = () => {
         position: 'relative'
       }}>
         <MandelbrotCanvas
+          ref={mandelbrotRef}
           maxIterations={maxIterations}
           coordinates={coordinates}
           zoomLevel={zoomLevel}
@@ -66,6 +80,7 @@ const App: React.FC = () => {
           onCursorMove={setCursorPosition}
           zoomStepSize={zoomStepSize}
           zoomAnimationSpeed={zoomAnimationSpeed}
+          onScreenshot={handleScreenshot}
         />
       </div>
       <ControlPanel
@@ -80,6 +95,7 @@ const App: React.FC = () => {
         onZoomAnimationSpeedChange={setZoomAnimationSpeed}
         selectedColorScheme={selectedColorScheme}
         onColorSchemeChange={setSelectedColorScheme}
+        onScreenshot={() => mandelbrotRef.current?.captureScreenshot()}
       />
     </div>
   );

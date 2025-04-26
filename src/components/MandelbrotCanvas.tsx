@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { ColorScheme } from '../types/ColorScheme';
 
 interface Props {
@@ -12,11 +12,16 @@ interface Props {
   onCursorMove: (coords: { x: number | null; y: number | null }) => void;
   zoomStepSize: number; // Percentage as decimal (e.g., 0.2 for 20%)
   zoomAnimationSpeed: number; // Animation speed factor (e.g., 0.1)
+  onScreenshot?: (dataUrl: string) => void; // New prop for screenshot callback
+}
+
+export interface MandelbrotCanvasRef {
+  captureScreenshot: () => void;
 }
 
 const ASPECT_RATIO = 4/3; // Standard 800x600 aspect ratio
 
-const MandelbrotCanvas: React.FC<Props> = ({
+const MandelbrotCanvas = forwardRef<MandelbrotCanvasRef, Props>(({
   maxIterations,
   coordinates,
   zoomLevel,
@@ -26,8 +31,9 @@ const MandelbrotCanvas: React.FC<Props> = ({
   quality,
   onCursorMove,
   zoomStepSize,
-  zoomAnimationSpeed
-}) => {
+  zoomAnimationSpeed,
+  onScreenshot
+}, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
@@ -36,6 +42,17 @@ const MandelbrotCanvas: React.FC<Props> = ({
   const animationFrameRef = useRef<number | null>(null);
   const targetZoomRef = useRef(zoomLevel);
   const currentZoomRef = useRef(zoomLevel);
+
+  // Expose the captureScreenshot method via ref
+  useImperativeHandle(ref, () => ({
+    captureScreenshot
+  }));
+
+  // Keep zoom refs in sync with props
+  useEffect(() => {
+    targetZoomRef.current = zoomLevel;
+    currentZoomRef.current = zoomLevel;
+  }, [zoomLevel]);
 
   // Initialize Web Worker
   useEffect(() => {
@@ -338,6 +355,25 @@ const MandelbrotCanvas: React.FC<Props> = ({
     }
   };
 
+  const captureScreenshot = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !onScreenshot) return;
+
+    // Create a temporary canvas for high-quality capture
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+
+    // Draw the current canvas content
+    tempCtx.drawImage(canvas, 0, 0);
+
+    // Convert to data URL and trigger callback
+    const dataUrl = tempCanvas.toDataURL('image/png');
+    onScreenshot(dataUrl);
+  }, [onScreenshot]);
+
   return (
     <canvas
       ref={canvasRef}
@@ -358,6 +394,6 @@ const MandelbrotCanvas: React.FC<Props> = ({
       onWheel={handleWheel}
     />
   );
-};
+});
 
 export default MandelbrotCanvas; 
